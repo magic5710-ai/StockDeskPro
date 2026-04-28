@@ -32,11 +32,13 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Build APK
+    # 🔥 關鍵：用 debug + log_level 直接把錯誤打出來
+    - name: Build APK (full log)
       run: |
-        buildozer android debug
+        buildozer -v android debug
 
     - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: apk
