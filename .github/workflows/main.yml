@@ -2,6 +2,7 @@ name: Build APK
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,11 +12,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install system deps
+    - name: Install system dependencies
       run: |
         sudo apt update
         sudo apt install -y \
           python3-pip \
+          python3-setuptools \
+          python3-venv \
           build-essential \
           git \
           zip \
@@ -23,21 +26,39 @@ jobs:
           openjdk-17-jdk \
           libffi-dev \
           libssl-dev \
-          uuid-dev
+          uuid-dev \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          cmake
 
-    - name: Install buildozer
+    - name: Install Buildozer
       run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+        python3 -m pip install --upgrade pip setuptools wheel
+        python3 -m pip install buildozer==1.5.0 cython==0.29.36 virtualenv
 
-    - name: Accept licenses
-      run: yes | buildozer android update
+    - name: Clean previous build cache
+      run: |
+        rm -rf .buildozer
+        rm -rf bin
+
+    - name: Create Android license files
+      run: |
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
     - name: Build APK
-      run: buildozer android debug
+      run: |
+        buildozer -v android debug
 
     - name: Upload APK
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: apk
-        path: bin/*.apk
+        name: apk-output
+        path: |
+          bin/*.apk
+          .buildozer/android/platform/build-*/dists/*/build/outputs/apk/debug/*.apk
