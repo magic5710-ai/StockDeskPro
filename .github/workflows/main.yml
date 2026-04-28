@@ -30,20 +30,20 @@ jobs:
 
     - name: Install buildozer
       run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+        python3 -m pip install --upgrade pip
+        python3 -m pip install buildozer cython virtualenv
 
-    # 🔥 關鍵：先初始化 SDK（讓 buildozer 下載東西）
-    - name: Init buildozer (install SDK)
+    - name: Prepare Android SDK
       run: |
         buildozer android debug || true
 
-    # 🔥 再強制同意授權（這時 SDK 已存在）
-    - name: Accept licenses
+    - name: Force accept Android licenses
       run: |
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
-    # 🔥 正式打包
     - name: Build APK
       run: |
         buildozer android debug
