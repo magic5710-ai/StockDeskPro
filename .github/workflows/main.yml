@@ -22,7 +22,11 @@ jobs:
           unzip \
           openjdk-17-jdk \
           libffi-dev \
-          libssl-dev
+          libssl-dev \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config
 
     - name: Install buildozer
       run: |
